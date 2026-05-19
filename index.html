@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>VehicleInspect | UK's Leading Vehicle Inspection Service</title>
+    <meta name="description" content="Professional vehicle inspection services for Cars, Trucks, Vans, Boats, Yachts, Bikes, ATVs, Jetskis across the UK.">
+    <meta name="keywords" content="car inspection, bike inspection, boat inspection, vehicle check, UK service">
+    <meta name="author" content="VehicleInspect">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/vi logo2.png">
+    
+    <!-- Tailwind + Fonts + AOS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    
+    <!-- Stripe SDK -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-white text-gray-800">
+
+    <!-- Chatbot Button -->
+    <div class="chatbot-btn" id="chatbotToggle">
+        <i class="fas fa-comment-dots text-white text-2xl"></i>
+    </div>
+    
+    <!-- Chat Window -->
+    <div class="chat-window" id="chatWindow">
+        <div class="bg-blue-600 text-white p-3 font-bold flex justify-between">
+            <span>VehicleInspect Assistant</span>
+            <i class="fas fa-times cursor-pointer" id="closeChat"></i>
+        </div>
+        <div class="h-80 overflow-y-auto p-3 space-y-2" id="chatMessages">
+            <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg text-sm">👋 Hi! I'm your booking assistant. Ask me about vehicle inspections, pricing, or booking.</div>
+        </div>
+        <div class="p-2 border-t dark:border-gray-600 flex">
+            <input type="text" id="chatInput" placeholder="Type a message..." class="flex-1 border rounded-l p-2 text-sm dark:bg-gray-800">
+            <button id="sendChat" class="bg-blue-600 text-white px-3 rounded-r">Send</button>
+        </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <button id="darkModeToggle" class="fixed top-5 right-5 z-50 bg-white dark:bg-gray-800 shadow-md p-2 rounded-full w-10 h-10 flex items-center justify-center">
+        <i class="fas fa-moon dark:text-yellow-300 text-gray-700"></i>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-40 dark:bg-gray-900">
+        <div class="container mx-auto px-5 py-3 flex flex-wrap justify-between items-center">
+            <a href="#home" class="flex items-center space-x-3 cursor-pointer group">
+                <img src="assets/vi logo2.png" alt="Logo" class="w-10 h-10 transition-transform duration-300 group-hover:scale-105">
+                <div class="text-2xl font-bold text-blue-600 transition-colors duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-400">
+                    Vehicle<span class="text-red-500 group-hover:text-red-600">Inspect</span>
+                </div>
+            </a>
+            
+            <div class="hidden md:flex space-x-6 font-medium items-center">
+                <a href="#home" class="hover:text-blue-600 transition">Home</a>
+                <a href="#categories" class="hover:text-blue-600 transition">Vehicles</a>
+                <a href="#countries" class="hover:text-blue-600 transition">Countries</a>
+                <a href="#dealers" class="hover:text-blue-600 transition">Dealers</a>
+                <a href="#contact" class="hover:text-blue-600 transition">Contact</a>
+                <button id="navAdminBtn" class="bg-gray-800 text-white px-4 py-1 rounded-full text-sm hover:bg-gray-700 transition">
+                    <i class="fas fa-shield-alt mr-1"></i> Admin
+                </button>
+            </div>
+            
+            <button class="md:hidden text-2xl">☰</button>
+        </div>
+    </nav>
+
+    <!-- Main Website Content -->
+    <div id="mainContent">
+        <!-- Hero -->
+        <section id="home" class="container mx-auto px-5 py-16 md:py-20 text-center" data-aos="fade-up">
+            <h1 class="text-4xl md:text-6xl font-extrabold">Professional <span class="text-blue-600">Vehicle Inspection</span> Across UK</h1>
+            <p class="text-gray-500 text-lg mt-4">Cars, Trucks, Vans, Bikes, Boats, Yachts, ATVs, Jetskis — We inspect them all!</p>
+            <div class="mt-8">
+                <img src="https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200&h=400&fit=crop" alt="Vehicle Inspection" class="rounded-2xl shadow-2xl w-full object-cover" style="max-height: 400px;">
+            </div>
+        </section>
+
+        <!-- Vehicle Categories Section -->
+        <section id="categories" class="py-16 bg-gray-50 dark:bg-gray-800">
+            <div class="container mx-auto px-5">
+                <h2 class="text-3xl font-bold text-center mb-4">Choose Your Vehicle Type</h2>
+                <p class="text-center text-gray-500 mb-12">Click on any vehicle to see inspection plans</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4" id="categoriesGrid"></div>
+            </div>
+        </section>
+
+        <!-- Plans Section -->
+        <section id="plansSection" class="py-16 container mx-auto px-5 vehicle-section">
+            <h2 class="text-3xl font-bold text-center mb-4" id="selectedVehicleTitle">Select a Vehicle Category</h2>
+            <p class="text-center text-gray-500 mb-12" id="selectedVehicleSubtitle">Click on any vehicle image above to view inspection plans</p>
+            <div class="grid md:grid-cols-3 gap-8 mt-6" id="plansContainer"></div>
+        </section>
+
+    <!-- Countries Marquee Section -->
+<section id="countries" class="py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 overflow-hidden">
+    <div class="container mx-auto px-5">
+        <h2 class="text-3xl font-bold text-center mb-4 text-gray-800 dark:text-white">🌍 We Serve Worldwide</h2>
+        <p class="text-center text-gray-600 dark:text-gray-300 mb-12">Professional inspection services available in these countries</p>
+        <div class="relative overflow-hidden">
+            <div class="marquee-track marquee-track-1" id="countriesMarquee"></div>
+        </div>
+    </div>
+</section>
+
+        <!-- Verified Dealers Section -->
+        <section id="dealers" class="py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900">
+            <div class="container mx-auto px-5">
+                <h2 class="text-3xl font-bold text-center mb-4">Verified Dealers & Car Sales</h2>
+                <p class="text-center text-gray-600 dark:text-gray-300 mb-12">Trusted partners across the UK with excellent reviews</p>
+                <div class="grid md:grid-cols-3 gap-8 mb-12">
+                    <div class="bg-white dark:bg-gray-700 rounded-2xl p-6 text-center shadow-lg card-hover">
+                        <i class="fas fa-users text-blue-500 text-5xl"></i>
+                        <div class="counter-number" id="dealersCount">0</div>
+                        <p class="font-semibold mt-2">Verified Dealers</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 rounded-2xl p-6 text-center shadow-lg card-hover">
+                        <i class="fas fa-car text-blue-500 text-5xl"></i>
+                        <div class="counter-number" id="carsSoldCount">0</div>
+                        <p class="font-semibold mt-2">Cars Sold (2024)</p>
+                    </div>
+                    <div class="bg-white dark:bg-gray-700 rounded-2xl p-6 text-center shadow-lg card-hover">
+                        <i class="fas fa-star text-yellow-500 text-5xl"></i>
+                        <div class="counter-number" id="reviewsCount">0</div>
+                        <p class="font-semibold mt-2">Customer Reviews</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+                    <h3 class="text-xl font-bold mb-4">⭐ Top Rated Dealers</h3>
+                    <div class="space-y-4" id="dealersList"></div>
+                </div>
+            </div>
+        </section>
+<!-- ========== BLOG SECTION ========== -->
+<section id="blog" class="py-16 bg-gray-50 dark:bg-gray-800">
+    <div class="container mx-auto px-5">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-3">
+                📝 Latest from <span class="text-blue-600">Our Blog</span>
+            </h2>
+            <p class="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
+                Expert tips, maintenance guides, and industry news to keep your vehicle in top condition
+            </p>
+        </div>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="blogGrid"></div>
+    </div>
+</section>
+        <!-- Contact -->
+        <section id="contact" class="py-16 container mx-auto px-5">
+            <h2 class="text-3xl font-bold text-center">Get In Touch</h2>
+            <div class="max-w-2xl mx-auto mt-10">
+                <form id="contactForm" class="space-y-4">
+                    <input type="text" id="contactName" placeholder="Full Name" class="w-full p-3 border rounded dark:bg-gray-800" required>
+                    <input type="email" id="contactEmail" placeholder="Email" class="w-full p-3 border rounded dark:bg-gray-800" required>
+                    <textarea id="contactMsg" placeholder="Message" rows="4" class="w-full p-3 border rounded"></textarea>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded w-full hover:bg-blue-700">Send Message</button>
+                </form>
+                <div class="text-center mt-8">
+                    <p><i class="fas fa-envelope text-blue-600 mr-2"></i> support@vehicleinspect.co.uk</p>
+                    <p class="mt-2"><i class="fas fa-phone text-blue-600 mr-2"></i> +44 20 7946 0138</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white py-12">
+            <div class="container mx-auto px-5">
+                <div class="flex flex-col items-center justify-center mb-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <img src="assets/vi logo2.png" alt="VehicleInspect Logo" class="w-12 h-12 object-contain">
+                        <div class="text-2xl font-bold">
+                            <span class="text-blue-400">Vehicle</span><span class="text-red-400">Inspect</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 text-sm">Professional Vehicle Inspection Service</p>
+                </div>
+                <div class="border-t border-gray-700 my-6"></div>
+                <p class="text-gray-400 text-center text-sm">
+                    © 2025 VehicleInspect - Trusted UK Vehicle Inspections. All rights reserved.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPage" class="admin-page">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+            <nav class="bg-blue-600 text-white p-4 shadow-lg">
+                <div class="container mx-auto flex justify-between items-center">
+                    <span class="text-xl font-bold">Admin Dashboard</span>
+                    <button id="backToSiteBtn" class="bg-white text-blue-600 px-4 py-2 rounded-lg">← Back to Site</button>
+                </div>
+            </nav>
+            <div class="container mx-auto px-5 py-8">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold mb-4">📋 Bookings</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="border-b">
+                                <tr><th class="p-2">Customer</th><th class="p-2">Vehicle</th><th class="p-2">Plan</th><th class="p-2">City</th><th class="p-2">Date</th></tr>
+                            </thead>
+                            <tbody id="adminBookingList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal-overlay">
+        <div class="booking-modal">
+            <span class="close-modal-btn" id="closeModal">&times;</span>
+            <h3 class="text-2xl font-bold mb-4">Complete Your Booking</h3>
+            <form id="professionalBookingForm">
+                <input type="hidden" id="planNameInput">
+                <input type="hidden" id="planPriceInput">
+                <input type="hidden" id="vehicleTypeInput">
+                
+                <div class="mb-3">
+                    <label>Full Name *</label>
+                    <input type="text" id="bookingName" class="w-full p-2 border rounded">
+                    <span class="error-message" id="nameError"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Email *</label>
+                    <input type="email" id="bookingEmail" class="w-full p-2 border rounded">
+                    <span class="error-message" id="emailError"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Phone</label>
+                    <input type="tel" id="bookingPhone" class="w-full p-2 border rounded">
+                </div>
+                
+                <div class="mb-3">
+                    <label>Country *</label>
+                    <select id="bookingCountry" class="w-full p-2 border rounded">
+                        <option value="">-- Select Country --</option>
+                    </select>
+                    <span class="error-message" id="countryError"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label>City *</label>
+                    <select id="bookingCity" class="w-full p-2 border rounded"> 
+                        <option value="">-- First Select Country --</option>
+                    </select>
+                    <span class="error-message" id="cityError"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label>Preferred Date</label>
+                    <input type="date" id="bookingDate" class="w-full p-2 border rounded">
+                </div>
+                
+                <button type="submit" class="btn-primary text-white w-full py-2 rounded-full mt-3">Confirm & Proceed to Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="booking-modal payment-modal">
+            <span class="close-modal-btn" id="closePaymentModal">&times;</span>
+            <h3 class="text-2xl font-bold mb-4">💳 Complete Payment</h3>
+            <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <p class="text-gray-600 dark:text-gray-300">Booking Summary:</p>
+                <p class="text-xl font-bold mt-2" id="paymentSummary">-</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Card Details</label>
+                <div id="card-element" class="border rounded-lg p-3 bg-white dark:bg-gray-800"></div>
+                <div id="card-errors" class="text-red-500 text-sm mt-2"></div>
+            </div>
+            <button id="stripePayBtn" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">Pay £<span id="payAmount">0</span></button>
+            <div class="text-center text-sm text-gray-500 mt-4"><i class="fab fa-cc-visa mr-2"></i><i class="fab fa-cc-mastercard mr-2"></i>🔒 Secure by Stripe</div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal-overlay">
+        <div class="booking-modal">
+            <span class="close-modal-btn" id="closeAdminModal">&times;</span>
+            <h3 class="text-2xl font-bold mb-4">Admin Login</h3>
+            <form id="adminLoginForm">
+                <div class="mb-3"><label>Username</label><input type="text" id="adminUsername" class="w-full p-2 border rounded"></div>
+                <div class="mb-3"><label>Password</label><input type="password" id="adminPassword" class="w-full p-2 border rounded"></div>
+                <button type="submit" class="bg-blue-600 text-white w-full py-2 rounded-full">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- UK Cities Grid (Hidden - Used by JavaScript) -->
+    <div id="ukCitiesGrid" style="display: none;"></div>
+
+    <!-- Blog Grid -->
+    <div id="blogGrid" style="display: none;"></div>
+
+    <!-- Admin Elements (Hidden - Used by JavaScript) -->
+    <div id="adminPriceList" style="display: none;"></div>
+    <div id="statBookings" style="display: none;">0</div>
+    <div id="statRevenue" style="display: none;">£0</div>
+    <div id="statVehicles" style="display: none;">0</div>
+    <div id="statCities" style="display: none;">0</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="script.js"></script>
+    <script src="payment.js"></script>
+</body>
+</html>
